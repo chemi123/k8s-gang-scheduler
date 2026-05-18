@@ -77,6 +77,74 @@ User: GangJob作成
 - Fair sharing / Queue間リソース貸し借り
 - 失敗時リトライ
 
+## CRDスキーマ
+
+### Queue
+
+```yaml
+apiVersion: gang.k8s.io/v1alpha1
+kind: Queue
+metadata:
+  name: research-team-a
+spec:
+  nodeSelector:
+    matchLabels:
+      gang.k8s.io/queue.research-team-a: "true"
+  capacity: 16
+  maxNodesPerJob: 8
+  serverType: gpu
+```
+
+- `nodeSelector` — Queue配下のNodeをlabelで指定。1 Nodeが複数Queueに所属可能
+- `capacity` — 組織に割り当てられたノード数（ユーザー確認用）
+- `maxNodesPerJob` — 1ジョブあたりの最大ノード数。GangJob作成時に `minNodes > maxNodesPerJob` なら弾く
+- `serverType` — `gpu` or `cpu`。情報用フィールド、スケジューリングには使わない
+
+### Node（label設計）
+
+```yaml
+apiVersion: v1
+kind: Node
+metadata:
+  name: worker-01
+  labels:
+    gang.k8s.io/queue.research-team-a: "true"
+    gang.k8s.io/queue.shared-pool: "true"
+```
+
+- labelキーに `gang.k8s.io/queue.<queue名>`、valueは `"true"`
+- 複数Queueに所属する場合はlabelを複数付与
+
+### GangJob
+
+```yaml
+apiVersion: gang.k8s.io/v1alpha1
+kind: GangJob
+metadata:
+  name: training-job-001
+spec:
+  queueName: research-team-a
+  numNodes: 4
+  priority: 1
+  maxRuntime: 24h
+  template:
+    spec:
+      containers:
+        - name: worker
+          image: training:latest
+```
+
+- `queueName` — 投入先のQueue
+- `numNodes` — 確保するノード数（きっちりこの数）
+- `priority` — 1-10、デフォルト1、高い方が優先。隠しオプション
+- `maxRuntime` — デフォルト24h、隠しオプションで延長可
+- `template` — 全Podに適用される単一テンプレート
+- バリデーション: `numNodes > Queue.maxNodesPerJob` または `numNodes > Queue.capacity` なら作成時に弾く
+
+### PodGroup
+
+TODO
+
 ## 未決事項
 
 - Queue → Node 紐付けの具体的なlabel設計（Volcanoの実装確認後に決定）
