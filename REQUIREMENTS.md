@@ -122,6 +122,7 @@ apiVersion: gang.k8s.io/v1alpha1
 kind: GangJob
 metadata:
   name: training-job-001
+  namespace: user-alice
 spec:
   queueName: research-team-a
   numNodes: 4
@@ -143,7 +144,37 @@ spec:
 
 ### PodGroup
 
-TODO
+```yaml
+apiVersion: gang.k8s.io/v1alpha1
+kind: PodGroup
+metadata:
+  name: training-job-001
+  namespace: user-alice
+  ownerReferences:
+    - apiVersion: gang.k8s.io/v1alpha1
+      kind: GangJob
+      name: training-job-001
+spec:
+  queueName: research-team-a
+  numNodes: 4
+  priority: 1
+status:
+  phase: Pending  # Pending | Running | Succeeded | Failed
+```
+
+- Controllerが GangJob検知時に作成。specはGangJobからのコピー
+- SchedulerはPodGroupのみで判断可能（GangJob参照不要）
+- ownerReference: GangJob → PodGroup → Pod群 のチェーンでcascade delete
+
+### リソーススコープ
+
+| リソース | スコープ |
+|---------|---------|
+| Queue | Cluster-scoped |
+| Node | Cluster-scoped |
+| GangJob | Namespaced |
+| PodGroup | Namespaced |
+| Pod | Namespaced |
 
 ## 未決事項
 
