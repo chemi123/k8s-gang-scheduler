@@ -210,6 +210,14 @@ status:
 ## 未決事項
 
 - [x] Queue → Node 紐付けの具体的なlabel設計 → `gang.k8s.io/queue.<queue名>: "true"`
+- [ ] 異常系/エッジケースにおける振る舞い
+  - [ ] Bind失敗時のロールバック
+  - [ ] Scheduler/Controllerクラッシュリカバリ
+  - [ ] Node障害時の扱い
+  - [ ] GangJob削除/キャンセル
+  - [ ] Schedulerのループ方式
+  - [ ] Nodeの二重割当防止
+  - [ ] Pod失敗の定義
 
 ## 参考ドキュメント
 
