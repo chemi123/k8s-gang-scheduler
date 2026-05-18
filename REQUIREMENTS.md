@@ -77,6 +77,36 @@ User: GangJob作成
 - Fair sharing / Queue間リソース貸し借り
 - 失敗時リトライ
 
+## 異常系/エッジケースにおける振る舞い
+
+### Bind失敗時のロールバック
+
+TODO
+
+### Scheduler/Controllerクラッシュリカバリ
+
+TODO
+
+### Node障害時の扱い
+
+TODO
+
+### GangJob削除/キャンセル
+
+TODO
+
+### Schedulerのループ方式
+
+TODO
+
+### Nodeの二重割当防止
+
+TODO
+
+### Pod失敗の定義
+
+TODO
+
 ## CRDスキーマ
 
 ### Queue
