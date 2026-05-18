@@ -218,6 +218,7 @@ status:
   - [ ] Schedulerのループ方式
   - [ ] Nodeの二重割当防止
   - [ ] Pod失敗の定義
+- [ ] K8s PodGroup schedulingがGAになった場合の移行方針
 
 ## 参考ドキュメント
 
