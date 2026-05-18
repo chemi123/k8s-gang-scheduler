@@ -179,7 +179,7 @@ status:
 
 ## 未決事項
 
-- Queue → Node 紐付けの具体的なlabel設計（Volcanoの実装確認後に決定）
+- [x] Queue → Node 紐付けの具体的なlabel設計 → `gang.k8s.io/queue.<queue名>: "true"`
 
 ## 参考ドキュメント
 
