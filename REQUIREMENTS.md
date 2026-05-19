@@ -171,6 +171,9 @@ spec:
 - `maxRuntime` — デフォルト24h、隠しオプションで延長可
 - `template` — 全Podに適用される単一テンプレート
 - バリデーション: `numNodes > Queue.maxNodesPerJob` または `numNodes > Queue.capacity` なら作成時に弾く
+- status:
+  - `phase` — `Pending | Running | Succeeded | Failed`
+  - `failedPod` — 失敗起因のPod名（Failedの場合のみ）
 
 ### PodGroup
 
@@ -189,13 +192,13 @@ spec:
   numNodes: 4
   priority: 1
 status:
-  phase: Pending  # Pending | Running | Succeeded | Failed
-  failedPod: ""   # 失敗起因のPod名（Failedの場合のみ）
+  phase: Pending  # Pending | Running
 ```
 
 - Controllerが GangJob検知時に作成。specはGangJobからのコピー
 - SchedulerはPodGroupのみで判断可能（GangJob参照不要）
-- ownerReference: GangJob → PodGroup → Pod群 のチェーンでcascade delete
+- ジョブ完了時（Succeeded/Failed）にControllerが削除
+- ownerReference: GangJob → PodGroup → Pod群 のチェーン
 
 ### リソーススコープ
 
