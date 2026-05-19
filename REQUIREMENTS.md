@@ -107,6 +107,14 @@ Queue単位で独立してスケジューリングルール（同priority内FIFO
 
 ControllerがRunning状態のGangJobを監視し、maxRuntime超過で残Pod終了 → GangJob Failedにする。
 
+### 完了したGangJobの寿命
+
+完了（Succeeded/Failed）したGangJobとPodは3ヶ月後に自動削除（TTL）。
+
+### FIFO順序
+
+同priority内のFIFO順序は `metadata.creationTimestamp` で決定。Namespace横断で適用される。
+
 ### Pod失敗の定義
 
 Pod phaseが`Failed`になったものを失敗とみなす。コンテナのexit code等の詳細は見ず、Pod phaseのみで判断する。
@@ -197,6 +205,7 @@ spec:
   queueName: research-team-a
   numNodes: 4
   priority: 1
+  ignoreCordoned: false
 status:
   phase: Pending  # Pending | Running
 ```
