@@ -81,31 +81,31 @@ User: GangJob作成
 
 ### Bind失敗時のロールバック
 
-TODO
+N個のPodをbindする途中で1つ失敗した場合、bind済みのPodのnodeNameを外してPodGroup全体をPendingに戻す。次のスケジューリングサイクルで再評価する。
 
 ### Scheduler/Controllerクラッシュリカバリ
 
-TODO
+特別なリカバリロジックは不要。起動時にGangJob/PodGroup/Podの現在の状態を読み取り、あるべき状態との差分を埋める（標準的なreconciliationパターン）。
 
 ### Node障害時の扱い
 
-TODO
+通常のPod失敗と同じフロー（残りPod終了 → GangJob Failed → failedPodに記録）。Schedulerは空きNode計算時にNodeのReady conditionを確認し、NotReady/UnknownなNodeは候補から除外する。NIC故障等のk8sが検知できない障害は別の仕組み（node error handler）の責務でスコープ外。
 
 ### GangJob削除/キャンセル
 
-TODO
+ownerReferenceチェーンによるcascade deleteに任せる。GangJob削除 → PodGroup削除 → Pod群削除。特別な処理は不要。
 
 ### Schedulerのループ方式
 
-TODO
+イベント駆動（PodGroup作成/Pod状態変化/Node状態変化のwatch）+ 定期re-syncの併用。k8s informerの標準パターンに従う。
 
 ### Nodeの二重割当防止
 
-TODO
+1サイクル内で全Queueをpriority順に逐次評価し、割り当て済みNodeをインメモリで追跡する。単一goroutineで処理するためロックは不要。
 
 ### Pod失敗の定義
 
-TODO
+Pod phaseが`Failed`になったものを失敗とみなす。コンテナのexit code等の詳細は見ず、Pod phaseのみで判断する。
 
 ## CRDスキーマ
 
@@ -122,12 +122,14 @@ spec:
       gang.k8s.io/queue.research-team-a: "true"
   capacity: 16
   maxNodesPerJob: 8
+  priority: 1
   serverType: gpu
 ```
 
 - `nodeSelector` — Queue配下のNodeをlabelで指定。1 Nodeが複数Queueに所属可能
 - `capacity` — 組織に割り当てられたノード数（ユーザー確認用）
-- `maxNodesPerJob` — 1ジョブあたりの最大ノード数。GangJob作成時に `minNodes > maxNodesPerJob` なら弾く
+- `maxNodesPerJob` — 1ジョブあたりの最大ノード数。GangJob作成時に `numNodes > maxNodesPerJob` なら弾く
+- `priority` — 1-10、デフォルト1、高い方が優先。Schedulerが1サイクル内でQueueを評価する順序を決定
 - `serverType` — `gpu` or `cpu`。情報用フィールド、スケジューリングには使わない
 
 ### Node（label設計）
@@ -214,13 +216,13 @@ status:
 
 - [x] Queue → Node 紐付けの具体的なlabel設計 → `gang.k8s.io/queue.<queue名>: "true"`
 - [ ] 異常系/エッジケースにおける振る舞い
-  - [ ] Bind失敗時のロールバック
-  - [ ] Scheduler/Controllerクラッシュリカバリ
-  - [ ] Node障害時の扱い
-  - [ ] GangJob削除/キャンセル
-  - [ ] Schedulerのループ方式
-  - [ ] Nodeの二重割当防止
-  - [ ] Pod失敗の定義
+  - [x] Bind失敗時のロールバック
+  - [x] Scheduler/Controllerクラッシュリカバリ
+  - [x] Node障害時の扱い
+  - [x] GangJob削除/キャンセル
+  - [x] Schedulerのループ方式
+  - [x] Nodeの二重割当防止
+  - [x] Pod失敗の定義
 - [ ] K8s PodGroup schedulingがGAになった場合の移行方針
 
 ## 参考ドキュメント
